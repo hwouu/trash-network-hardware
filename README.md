@@ -1,1 +1,1 @@
-# trash-monitor-hardware
+# trash-network-hardware
