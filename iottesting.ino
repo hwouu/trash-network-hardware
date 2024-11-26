@@ -8,8 +8,8 @@ AWS_IOT binstate;
 
 #define ANALOG_IN_PIN 35
 
-const char* ssid = "SSIBSARE";
-const char* password = "song1472";
+const char* ssid = "KAU-Guest";
+const char* password = "";
 
 char HOST_ADDRESS[] = "a7fbxwr7ybl3j-ats.iot.ap-northeast-2.amazonaws.com";
 char CLIENT_ID[] = "bin_1";
@@ -25,7 +25,7 @@ char rcvdPayload[512];
 unsigned long preMil = 0;
 const long intMil = 5000;
 
-int maind, subd, flames, bat;  //json 형식으로 보내기위한 최종 전역변수
+int maind = 0, subd = 0, flames = 0, bat = 0;  //json 형식으로 보내기위한 최종 전역변수
 
 //아래는 전압측정을 위한 변수
 float adc_voltage = 0.0;
@@ -46,7 +46,7 @@ void mySubCallBackHandler(char* topicName, int payloadLen, char* payLoad) {
 
 
 // 10분(600초) * 1초당 마이크로초 Deep sleep 시간 설정
-#define SLEEP_DURATION 10 * 1000000ULL
+#define SLEEP_DURATION 600 * 1000000ULL
 
 volatile bool flameDetected = false;
 
@@ -91,14 +91,14 @@ void setup() {
     } else {
       Serial.println("Subscribe Failed, Check the Thing Name and Certificates");
       while (1)
-      esp_restart();
-        ;
+        esp_restart();
+      ;
     }
   } else {
     Serial.println("AWS connection failed, Check the HOST Address");
     while (1)
-    esp_restart();
-      ;
+      esp_restart();
+    ;
   }
 
   pinMode(27, OUTPUT);  // led 핀 설정, Deep sleep 모드로 들어가는경우 모든 핀이 LOW로 전환되기때문에 RTC 핀을 활용하였음
@@ -233,8 +233,8 @@ void sonar_2() {
     Serial.println("Out of range");
   }
 
-  if (distance < 10) {              // 쓰레기통이 꽉 찼을 때 켜는 LED
-    rtc_gpio_hold_dis(GPIO_NUM_4);  // 제어 해제
+  if (maind < 30 && distance < 17) {  // 쓰레기통이 꽉 찼을 때 켜는 LED
+    rtc_gpio_hold_dis(GPIO_NUM_4);    // 제어 해제
     digitalWrite(4, HIGH);
     rtc_gpio_hold_en(GPIO_NUM_4);  // 다시 홀드
     Serial.println("LED ON");
@@ -262,7 +262,7 @@ void send_data_aws() {
 
 void batt_con() {                           //배터리의 상태를 모니터링하는 함수
   for (int i = 0; i < 6; i++) {             //안정화를 위해 5번 반복측정
-    adc_value = analogRead(ANALOG_IN_PIN);  //15번 핀으로 통해 모니터링
+    adc_value = analogRead(ANALOG_IN_PIN);  //35번 핀으로 통해 모니터링
 
     adc_voltage = (adc_value * ref_voltage) / 4096.0;  //분해능이 12비트기에 4096
 
